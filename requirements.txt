@@ -37,3 +37,4 @@ keyboard
 matplotlib
 hyper_connections==0.1.11
 sageattention==1.0.6
+security==1.3.1

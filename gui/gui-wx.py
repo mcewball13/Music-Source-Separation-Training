@@ -10,10 +10,11 @@ import json
 import webbrowser
 import requests
 import sys
+from security import safe_command
 
 def run_subprocess(cmd, output_queue):
     try:
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        process = safe_command.run(subprocess.Popen, cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         for line in process.stdout:
             output_queue.put(line)
         process.wait()
