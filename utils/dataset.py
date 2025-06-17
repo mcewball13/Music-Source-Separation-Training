@@ -1,4 +1,6 @@
 # coding: utf-8
+import fickling
+
 __author__ = 'Roman Solovyev (ZFTurbo): https://github.com/ZFTurbo/'
 
 
@@ -119,7 +121,7 @@ class MSSDataset(torch.utils.data.Dataset):
         if os.path.isfile(self.metadata_path):
             if self.verbose:
                 print('Found metadata cache file: {}'.format(self.metadata_path))
-            old_metadata = pickle.load(open(self.metadata_path, 'rb'))
+            old_metadata = fickling.load(open(self.metadata_path, 'rb'))
         else:
             return track_paths, metadata
 
