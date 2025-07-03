@@ -19,7 +19,7 @@ def get_model(
     from models.bandit.core.model import MultiMaskMultiSourceBandSplitRNNSimple
 
     f = open(config_path)
-    config = ConfigDict(yaml.load(f, Loader=yaml.FullLoader))
+    config = ConfigDict(yaml.load(f, Loader=yaml.SafeLoader))
     f.close()
 
     model = MultiMaskMultiSourceBandSplitRNNSimple(

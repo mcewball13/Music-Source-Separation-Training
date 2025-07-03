@@ -201,7 +201,7 @@ def load_config(model_type: str, config_path: str) -> Union[ConfigDict, OmegaCon
             if model_type == 'htdemucs':
                 config = OmegaConf.load(config_path)
             else:
-                config = ConfigDict(yaml.load(f, Loader=yaml.FullLoader))
+                config = ConfigDict(yaml.load(f, Loader=yaml.SafeLoader))
             return config
     except FileNotFoundError:
         raise FileNotFoundError(f"Configuration file not found at {config_path}")
