@@ -1,9 +1,10 @@
 # coding: utf-8
+import secrets
+
 __author__ = 'Roman Solovyev (ZFTurbo): https://github.com/ZFTurbo/'
 
 
 import os
-import random
 import numpy as np
 import torch
 import soundfile as sf
@@ -251,7 +252,7 @@ class MSSDataset(torch.utils.data.Dataset):
     def load_source(self, metadata, instr):
         while True:
             if self.dataset_type in [1, 4]:
-                track_path, track_length = random.choice(metadata)
+                track_path, track_length = secrets.choice(metadata)
                 for extension in self.file_types:
                     path_to_audio_file = track_path + '/{}.{}'.format(instr, extension)
                     if os.path.isfile(path_to_audio_file):
@@ -263,7 +264,7 @@ class MSSDataset(torch.utils.data.Dataset):
                             source = np.zeros((2, self.chunk_size), dtype=np.float32)
                         break
             else:
-                track_path, track_length = random.choice(metadata[instr])
+                track_path, track_length = secrets.choice(metadata[instr])
                 try:
                     source = load_chunk(track_path, track_length, self.chunk_size)
                 except Exception as e:
@@ -287,7 +288,7 @@ class MSSDataset(torch.utils.data.Dataset):
                     if self.config['augmentations'].mixup:
                         mixup = [s1]
                         for prob in self.config.augmentations.mixup_probs:
-                            if random.uniform(0, 1) < prob:
+                            if secrets.SystemRandom().uniform(0, 1) < prob:
                                 s2 = self.load_source(self.metadata, instr)
                                 mixup.append(s2)
                         mixup = torch.stack(mixup, dim=0)
@@ -304,7 +305,7 @@ class MSSDataset(torch.utils.data.Dataset):
         return res
 
     def load_aligned_data(self):
-        track_path, track_length = random.choice(self.metadata)
+        track_path, track_length = secrets.choice(self.metadata)
         attempts = 10
         while attempts:
             if track_length >= self.chunk_size:
@@ -360,25 +361,25 @@ class MSSDataset(torch.utils.data.Dataset):
         # Channel shuffle
         if 'channel_shuffle' in augs:
             if augs['channel_shuffle'] > 0:
-                if random.uniform(0, 1) < augs['channel_shuffle']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['channel_shuffle']:
                     source = source[::-1].copy()
                     applied_augs.append('channel_shuffle')
         # Random inverse
         if 'random_inverse' in augs:
             if augs['random_inverse'] > 0:
-                if random.uniform(0, 1) < augs['random_inverse']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['random_inverse']:
                     source = source[:, ::-1].copy()
                     applied_augs.append('random_inverse')
         # Random polarity (multiply -1)
         if 'random_polarity' in augs:
             if augs['random_polarity'] > 0:
-                if random.uniform(0, 1) < augs['random_polarity']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['random_polarity']:
                     source = -source.copy()
                     applied_augs.append('random_polarity')
         # Random pitch shift
         if 'pitch_shift' in augs:
             if augs['pitch_shift'] > 0:
-                if random.uniform(0, 1) < augs['pitch_shift']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['pitch_shift']:
                     apply_aug = AU.PitchShift(
                         min_semitones=augs['pitch_shift_min_semitones'],
                         max_semitones=augs['pitch_shift_max_semitones'],
@@ -389,7 +390,7 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random seven band parametric eq
         if 'seven_band_parametric_eq' in augs:
             if augs['seven_band_parametric_eq'] > 0:
-                if random.uniform(0, 1) < augs['seven_band_parametric_eq']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['seven_band_parametric_eq']:
                     apply_aug = AU.SevenBandParametricEQ(
                         min_gain_db=augs['seven_band_parametric_eq_min_gain_db'],
                         max_gain_db=augs['seven_band_parametric_eq_max_gain_db'],
@@ -400,7 +401,7 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random tanh distortion
         if 'tanh_distortion' in augs:
             if augs['tanh_distortion'] > 0:
-                if random.uniform(0, 1) < augs['tanh_distortion']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['tanh_distortion']:
                     apply_aug = AU.TanhDistortion(
                         min_distortion=augs['tanh_distortion_min'],
                         max_distortion=augs['tanh_distortion_max'],
@@ -411,7 +412,7 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random MP3 Compression
         if 'mp3_compression' in augs:
             if augs['mp3_compression'] > 0:
-                if random.uniform(0, 1) < augs['mp3_compression']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['mp3_compression']:
                     apply_aug = AU.Mp3Compression(
                         min_bitrate=augs['mp3_compression_min_bitrate'],
                         max_bitrate=augs['mp3_compression_max_bitrate'],
@@ -423,7 +424,7 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random AddGaussianNoise
         if 'gaussian_noise' in augs:
             if augs['gaussian_noise'] > 0:
-                if random.uniform(0, 1) < augs['gaussian_noise']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['gaussian_noise']:
                     apply_aug = AU.AddGaussianNoise(
                         min_amplitude=augs['gaussian_noise_min_amplitude'],
                         max_amplitude=augs['gaussian_noise_max_amplitude'],
@@ -434,7 +435,7 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random TimeStretch
         if 'time_stretch' in augs:
             if augs['time_stretch'] > 0:
-                if random.uniform(0, 1) < augs['time_stretch']:
+                if secrets.SystemRandom().uniform(0, 1) < augs['time_stretch']:
                     apply_aug = AU.TimeStretch(
                         min_rate=augs['time_stretch_min_rate'],
                         max_rate=augs['time_stretch_max_rate'],
@@ -451,25 +452,20 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random Reverb
         if 'pedalboard_reverb' in augs:
             if augs['pedalboard_reverb'] > 0:
-                if random.uniform(0, 1) < augs['pedalboard_reverb']:
-                    room_size = random.uniform(
-                        augs['pedalboard_reverb_room_size_min'],
+                if secrets.SystemRandom().uniform(0, 1) < augs['pedalboard_reverb']:
+                    room_size = secrets.SystemRandom().uniform(augs['pedalboard_reverb_room_size_min'],
                         augs['pedalboard_reverb_room_size_max'],
                     )
-                    damping = random.uniform(
-                        augs['pedalboard_reverb_damping_min'],
+                    damping = secrets.SystemRandom().uniform(augs['pedalboard_reverb_damping_min'],
                         augs['pedalboard_reverb_damping_max'],
                     )
-                    wet_level = random.uniform(
-                        augs['pedalboard_reverb_wet_level_min'],
+                    wet_level = secrets.SystemRandom().uniform(augs['pedalboard_reverb_wet_level_min'],
                         augs['pedalboard_reverb_wet_level_max'],
                     )
-                    dry_level = random.uniform(
-                        augs['pedalboard_reverb_dry_level_min'],
+                    dry_level = secrets.SystemRandom().uniform(augs['pedalboard_reverb_dry_level_min'],
                         augs['pedalboard_reverb_dry_level_max'],
                     )
-                    width = random.uniform(
-                        augs['pedalboard_reverb_width_min'],
+                    width = secrets.SystemRandom().uniform(augs['pedalboard_reverb_width_min'],
                         augs['pedalboard_reverb_width_max'],
                     )
                     board = PB.Pedalboard([PB.Reverb(
@@ -486,25 +482,20 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random Chorus
         if 'pedalboard_chorus' in augs:
             if augs['pedalboard_chorus'] > 0:
-                if random.uniform(0, 1) < augs['pedalboard_chorus']:
-                    rate_hz = random.uniform(
-                        augs['pedalboard_chorus_rate_hz_min'],
+                if secrets.SystemRandom().uniform(0, 1) < augs['pedalboard_chorus']:
+                    rate_hz = secrets.SystemRandom().uniform(augs['pedalboard_chorus_rate_hz_min'],
                         augs['pedalboard_chorus_rate_hz_max'],
                     )
-                    depth = random.uniform(
-                        augs['pedalboard_chorus_depth_min'],
+                    depth = secrets.SystemRandom().uniform(augs['pedalboard_chorus_depth_min'],
                         augs['pedalboard_chorus_depth_max'],
                     )
-                    centre_delay_ms = random.uniform(
-                        augs['pedalboard_chorus_centre_delay_ms_min'],
+                    centre_delay_ms = secrets.SystemRandom().uniform(augs['pedalboard_chorus_centre_delay_ms_min'],
                         augs['pedalboard_chorus_centre_delay_ms_max'],
                     )
-                    feedback = random.uniform(
-                        augs['pedalboard_chorus_feedback_min'],
+                    feedback = secrets.SystemRandom().uniform(augs['pedalboard_chorus_feedback_min'],
                         augs['pedalboard_chorus_feedback_max'],
                     )
-                    mix = random.uniform(
-                        augs['pedalboard_chorus_mix_min'],
+                    mix = secrets.SystemRandom().uniform(augs['pedalboard_chorus_mix_min'],
                         augs['pedalboard_chorus_mix_max'],
                     )
                     board = PB.Pedalboard([PB.Chorus(
@@ -520,25 +511,20 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random Phazer
         if 'pedalboard_phazer' in augs:
             if augs['pedalboard_phazer'] > 0:
-                if random.uniform(0, 1) < augs['pedalboard_phazer']:
-                    rate_hz = random.uniform(
-                        augs['pedalboard_phazer_rate_hz_min'],
+                if secrets.SystemRandom().uniform(0, 1) < augs['pedalboard_phazer']:
+                    rate_hz = secrets.SystemRandom().uniform(augs['pedalboard_phazer_rate_hz_min'],
                         augs['pedalboard_phazer_rate_hz_max'],
                     )
-                    depth = random.uniform(
-                        augs['pedalboard_phazer_depth_min'],
+                    depth = secrets.SystemRandom().uniform(augs['pedalboard_phazer_depth_min'],
                         augs['pedalboard_phazer_depth_max'],
                     )
-                    centre_frequency_hz = random.uniform(
-                        augs['pedalboard_phazer_centre_frequency_hz_min'],
+                    centre_frequency_hz = secrets.SystemRandom().uniform(augs['pedalboard_phazer_centre_frequency_hz_min'],
                         augs['pedalboard_phazer_centre_frequency_hz_max'],
                     )
-                    feedback = random.uniform(
-                        augs['pedalboard_phazer_feedback_min'],
+                    feedback = secrets.SystemRandom().uniform(augs['pedalboard_phazer_feedback_min'],
                         augs['pedalboard_phazer_feedback_max'],
                     )
-                    mix = random.uniform(
-                        augs['pedalboard_phazer_mix_min'],
+                    mix = secrets.SystemRandom().uniform(augs['pedalboard_phazer_mix_min'],
                         augs['pedalboard_phazer_mix_max'],
                     )
                     board = PB.Pedalboard([PB.Phaser(
@@ -554,9 +540,8 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random Distortion
         if 'pedalboard_distortion' in augs:
             if augs['pedalboard_distortion'] > 0:
-                if random.uniform(0, 1) < augs['pedalboard_distortion']:
-                    drive_db = random.uniform(
-                        augs['pedalboard_distortion_drive_db_min'],
+                if secrets.SystemRandom().uniform(0, 1) < augs['pedalboard_distortion']:
+                    drive_db = secrets.SystemRandom().uniform(augs['pedalboard_distortion_drive_db_min'],
                         augs['pedalboard_distortion_drive_db_max'],
                     )
                     board = PB.Pedalboard([PB.Distortion(
@@ -568,9 +553,8 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random PitchShift
         if 'pedalboard_pitch_shift' in augs:
             if augs['pedalboard_pitch_shift'] > 0:
-                if random.uniform(0, 1) < augs['pedalboard_pitch_shift']:
-                    semitones = random.uniform(
-                        augs['pedalboard_pitch_shift_semitones_min'],
+                if secrets.SystemRandom().uniform(0, 1) < augs['pedalboard_pitch_shift']:
+                    semitones = secrets.SystemRandom().uniform(augs['pedalboard_pitch_shift_semitones_min'],
                         augs['pedalboard_pitch_shift_semitones_max'],
                     )
                     board = PB.Pedalboard([PB.PitchShift(
@@ -582,9 +566,8 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random Resample
         if 'pedalboard_resample' in augs:
             if augs['pedalboard_resample'] > 0:
-                if random.uniform(0, 1) < augs['pedalboard_resample']:
-                    target_sample_rate = random.uniform(
-                        augs['pedalboard_resample_target_sample_rate_min'],
+                if secrets.SystemRandom().uniform(0, 1) < augs['pedalboard_resample']:
+                    target_sample_rate = secrets.SystemRandom().uniform(augs['pedalboard_resample_target_sample_rate_min'],
                         augs['pedalboard_resample_target_sample_rate_max'],
                     )
                     board = PB.Pedalboard([PB.Resample(
@@ -596,9 +579,8 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random Bitcrash
         if 'pedalboard_bitcrash' in augs:
             if augs['pedalboard_bitcrash'] > 0:
-                if random.uniform(0, 1) < augs['pedalboard_bitcrash']:
-                    bit_depth = random.uniform(
-                        augs['pedalboard_bitcrash_bit_depth_min'],
+                if secrets.SystemRandom().uniform(0, 1) < augs['pedalboard_bitcrash']:
+                    bit_depth = secrets.SystemRandom().uniform(augs['pedalboard_bitcrash_bit_depth_min'],
                         augs['pedalboard_bitcrash_bit_depth_max'],
                     )
                     board = PB.Pedalboard([PB.Bitcrush(
@@ -610,9 +592,8 @@ class MSSDataset(torch.utils.data.Dataset):
         # Random MP3Compressor
         if 'pedalboard_mp3_compressor' in augs:
             if augs['pedalboard_mp3_compressor'] > 0:
-                if random.uniform(0, 1) < augs['pedalboard_mp3_compressor']:
-                    vbr_quality = random.uniform(
-                        augs['pedalboard_mp3_compressor_pedalboard_mp3_compressor_min'],
+                if secrets.SystemRandom().uniform(0, 1) < augs['pedalboard_mp3_compressor']:
+                    vbr_quality = secrets.SystemRandom().uniform(augs['pedalboard_mp3_compressor_pedalboard_mp3_compressor_min'],
                         augs['pedalboard_mp3_compressor_pedalboard_mp3_compressor_max'],
                     )
                     board = PB.Pedalboard([PB.MP3Compressor(

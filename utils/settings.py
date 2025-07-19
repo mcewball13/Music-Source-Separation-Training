@@ -1,5 +1,4 @@
 import os
-import random
 import time
 import yaml
 import wandb
@@ -15,6 +14,7 @@ from torch.optim import Adam, AdamW, SGD, RAdam, RMSprop
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from utils.dataset import MSSDataset
+import secrets
 
 
 def parse_args_train(dict_args: Union[Dict, None]) -> argparse.Namespace:
@@ -301,7 +301,7 @@ def manual_seed(seed: int) -> None:
         seed: The seed value to set.
     """
 
-    random.seed(seed)
+    secrets.SystemRandom().seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
